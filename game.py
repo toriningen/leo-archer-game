@@ -181,8 +181,7 @@ class HumanPlayer(Player):
 class ComputerPlayer(Player):
     def __init__(self, game, name):
         super().__init__(game, name)
-        self.want_this_unit = None
-        self.want_another_random_unit()
+        self.want_this_unit = Farmer
 
     def want_another_random_unit(self):
         self.want_this_unit = random.choice([Farmer, Archer, Knight])
