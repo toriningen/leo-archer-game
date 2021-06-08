@@ -141,6 +141,9 @@ class Player:
 
         return random.choice(enemy_units)
 
+    def decide(self):
+        ...
+
 
 class HumanPlayer(Player):
     def ask_unit_to_buy(self):
@@ -162,9 +165,7 @@ class HumanPlayer(Player):
 
             print('Непонятно ввели, давайте еще раз.')
 
-    def on_turn(self):
-        super().on_turn()
-
+    def decide(self):
         while True:
             unit_type = self.ask_unit_to_buy()
             if unit_type is None:
@@ -186,9 +187,7 @@ class ComputerPlayer(Player):
     def want_another_random_unit(self):
         self.want_this_unit = random.choice([Farmer, Archer, Knight])
 
-    def on_turn(self):
-        super().on_turn()
-
+    def decide(self):
         # тупая стратегия - просто решаем какой юнит хотим и копим на него бабло
         if self.can_buy_unit(self.want_this_unit):
             self.buy_unit(self.want_this_unit)
@@ -212,6 +211,11 @@ class Game:
             if not player.is_defeated():
                 player.on_turn()
 
+    def decide(self):
+        for player in self.players:
+            if not player.is_defeated():
+                player.decide()
+
     def render(self):
         # хуево, чисто для демо
         print('=====')
@@ -230,16 +234,20 @@ class Game:
 
 if __name__ == '__main__':
     g_game = Game()
-    g_game.render()
 
     while True:
         g_game.make_turn()
         g_game.render()
 
         if g_game.human_defeated():
-            print('Вы проиграли')
+            g_game.render()
+            print('=== Вы проиграли')
             break
 
         if g_game.human_won():
-            print('Вы выиграли!')
+            g_game.render()
+            print('=== Вы выиграли!')
             break
+
+        g_game.decide()
+
