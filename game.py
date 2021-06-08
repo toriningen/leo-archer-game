@@ -82,6 +82,7 @@ class Player:
 
         self.gold = 5
 
+        self.bought_times = {}
         self.castle = Castle(self)
         self.units = [
             self.castle
@@ -93,6 +94,9 @@ class Player:
     def is_defeated(self):
         return not self.castle.is_alive()
 
+    def get_unit_cost(self, unit_type):
+        return round(unit_type.cost * (1.2 ** self.bought_times.get(unit_type, 0)))
+
     def can_buy_unit(self, unit_type):
         if not issubclass(unit_type, Unit):
             raise TypeError("not unit")
@@ -100,7 +104,9 @@ class Player:
         if not unit_type.for_sale:
             raise TypeError("unit is not for sale")
 
-        if self.gold < unit_type.cost:
+        real_cost = self.get_unit_cost(unit_type)
+
+        if self.gold < real_cost:
             return False
 
         return True
@@ -109,8 +115,9 @@ class Player:
         if not self.can_buy_unit(unit_type):
             raise ValueError("cannot buy unit")
 
-        self.gold -= unit_type.cost
+        self.gold -= self.get_unit_cost(unit_type)
         self.units.append(unit_type(self))
+        self.bought_times[unit_type] = self.bought_times.get(unit_type, 0) + 1
 
     def on_turn(self):
         for unit in self.units:
@@ -138,8 +145,12 @@ class Player:
 class HumanPlayer(Player):
     def ask_unit_to_buy(self):
         while True:
+            farmer_cost = self.get_unit_cost(Farmer)
+            archer_cost = self.get_unit_cost(Archer)
+            knight_cost = self.get_unit_cost(Knight)
+
             who = input(
-                f'Есть {self.gold} денег, кого купить? (enter - никого, 1 - фермер ({Farmer.cost}), 2 - лучник ({Archer.cost}), 3 - рыцарь ({Knight.cost})) >')
+                f'Есть {self.gold} денег, кого купить? (enter - никого, 1 - фермер ({farmer_cost}), 2 - лучник ({archer_cost}), 3 - рыцарь ({knight_cost})) >')
             if not who:
                 return None
             elif who == '1':
